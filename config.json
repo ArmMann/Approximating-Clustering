@@ -1,0 +1,28 @@
+{
+    "data": {
+        "dataset": "tweet_eval"
+    },
+    "pca_umap": {
+        "pca_components": 256,
+        "umap_n_neighbors": 128,
+        "umap_n_components": 32,
+        "umap_min_dist": 0.0,
+        "umap_metric": "minkowski"
+    },
+    "hdbscan": {
+        "min_cluster_size": 200,
+        "min_samples": 10,
+        "metric": "euclidean",
+        "cluster_selection_method": "eom",
+        "cluster_selection_epsilon": 0.2
+    },
+    "bertopic": {
+        "embedding_model": "multi-qa-distilbert-cos-v1",
+        "reduce_frequent_words": true
+    },
+    "nn": {
+        "learning_rate": 0.01,
+        "epochs": 301,
+        "batch_size": 64
+    }
+}

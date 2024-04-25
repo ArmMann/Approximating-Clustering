@@ -1,0 +1,10 @@
+numpy
+torch
+umap-learn
+hdbscan
+bertopic
+transformers
+scikit-learn
+datasets
+flair
+matplotlib
