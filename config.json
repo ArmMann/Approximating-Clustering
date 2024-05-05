@@ -1,6 +1,6 @@
 {
     "data": {
-        "dataset": "tweet_eval"
+        "dataset": "yelp_review_full"
     },
     "pca_umap": {
         "pca_components": 256,

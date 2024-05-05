@@ -1,14 +1,15 @@
 import json
 import torch
-from data_loader import load_data
+from data_loader import get_loader
 from dim_clustering import cluster_texts
 from train__nn import split_labeled_embeddings, train_network, evaluate_network
 
 if __name__ == "__main__":
     with open('config.json', 'r') as f:
         config = json.load(f)
-
-    texts = load_data(config['data']['dataset'])
+    
+    loader = get_loader(config['data']['dataset'])
+    texts = loader.load_data(config['data']['dataset'])
     embeddings, topics, topic_model = cluster_texts(texts, config)
 
   

@@ -15,7 +15,8 @@ class PCA_UMAP:
         self.umap = UMAP(n_neighbors=config['umap_n_neighbors'],
                          n_components=config['umap_n_components'],
                          min_dist=config['umap_min_dist'],
-                         metric=config['umap_metric'])
+                         metric=config['umap_metric'],
+                         random_state=42)
 
     def fit(self, X, y=None):
         self.pca.fit(X)
