@@ -35,7 +35,10 @@ class PCA_UMAP:
 
 def cluster_texts(texts, config):
     sentence_model = SentenceTransformer(config['bertopic']['embedding_model'])
-    embeddings = sentence_model.encode(texts, show_progress_bar=True)
+    pool = sentence_model.start_multi_process_pool()
+    print("Started embedding")
+    embeddings = sentence_model.encode_multi_process(texts, pool, batch_size=2048)
+    print("Finished embedding")
     
     dim_model = PCA_UMAP(config['pca_umap'])
     #umap_embeddings = dim_model.fit_transform(embeddings)
