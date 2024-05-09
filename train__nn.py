@@ -72,24 +72,37 @@ def train_network(X_train, y_train, X_val, y_val, num_classes, config):
     lr = config['nn']['learning_rate']
     epochs = config['nn']['epochs']
     batch_size = config['nn']['batch_size']
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
     # Compute weights based on training labels
     weight_dict = cluster_weights(y_train)
     sorted_weights = [weight_dict.get(i-1, 1.0) for i in range(num_classes)]
-    weights_tensor = torch.FloatTensor(sorted_weights)
+
     
     # Adjust labels to make -1 a 0 class
-    y_train = torch.tensor([label + 1 for label in y_train], dtype=torch.long)
-    y_val = torch.tensor([label + 1 for label in y_val], dtype=torch.long)
+    y_train = torch.tensor([label + 1 for label in y_train], dtype=torch.long).to(device)
+    y_val = torch.tensor([label + 1 for label in y_val], dtype=torch.long).to(device)
 
-    model = DeeperClassifierNN(num_classes)
+    #Adjusted model creation to handle multiple/single gpus
+    if torch.cuda.device_count() > 1:
+        print("Using", torch.cuda.device_count(), "GPUs!")
+        model = nn.DataParallel(DeeperClassifierNN(num_classes))
+    else:
+        print("Using single GPU or CPU")
+        model = DeeperClassifierNN(num_classes)
+
+    
+    model.to(device)
+    weights_tensor = torch.FloatTensor(sorted_weights).to(device)
+
     criterion = nn.CrossEntropyLoss(weight=weights_tensor)
     optimizer = optim.Adam(model.parameters(), lr=lr)
 
-    train_dataset = TensorDataset(torch.tensor(X_train, dtype=torch.float), y_train)
+    train_dataset = TensorDataset(torch.tensor(X_train, dtype=torch.float).to(device), y_train)
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     
-    val_dataset = TensorDataset(torch.tensor(X_val, dtype=torch.float), y_val)
+    val_dataset = TensorDataset(torch.tensor(X_val, dtype=torch.float).to(device), y_val)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
     
     # Get current time to append to checkpoint files
@@ -99,6 +112,7 @@ def train_network(X_train, y_train, X_val, y_val, num_classes, config):
         model.train()
         train_loss, train_acc = 0, 0
         for inputs, labels in train_loader:
+            inputs, labels = inputs.to(device), labels.to(device)
             optimizer.zero_grad()
             outputs = model(inputs)
             loss = criterion(outputs, labels)
@@ -114,6 +128,7 @@ def train_network(X_train, y_train, X_val, y_val, num_classes, config):
         val_loss, val_acc = 0, 0
         with torch.no_grad():
             for inputs, labels in val_loader:
+                inputs, labels = inputs.to(device), labels.to(device)
                 outputs = model(inputs)
                 loss = criterion(outputs, labels)
                 val_loss += loss.item()
