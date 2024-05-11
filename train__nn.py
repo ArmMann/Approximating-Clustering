@@ -156,41 +156,46 @@ def train_network(X_train, y_train, X_val, y_val, num_classes, config):
 
 
 def evaluate_network(model, X_test, y_test, output_file="evaluation_results.txt"):
-    y_test = torch.tensor([label + 1 for label in y_test], dtype=torch.long)
-    test_dataset = TensorDataset(torch.tensor(X_test, dtype=torch.float), y_test)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.to(device) 
+    
+    X_test = torch.tensor(X_test, dtype=torch.float).to(device)
+    y_test = torch.tensor([label + 1 for label in y_test], dtype=torch.long).to(device)
+    test_dataset = TensorDataset(X_test, y_test)
     test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
+
     test_loss, test_acc = 0, 0
     all_preds, all_labels = [], []
     
     model.eval()
     with torch.no_grad():
         for inputs, labels in test_loader:
+            inputs, labels = inputs.to(device), labels.to(device)  
             outputs = model(inputs)
             loss = nn.CrossEntropyLoss()(outputs, labels)
             test_loss += loss.item()
             test_acc += calculate_accuracy(labels, outputs).item()
             
             _, preds = torch.max(outputs, 1)
-            all_preds.extend(preds.cpu().numpy())
-            all_labels.extend(labels.cpu().numpy())
-            
+            all_preds.extend(preds.cpu().numpy())  # Move predictions back to CPU for numpy conversion
+            all_labels.extend(labels.cpu().numpy())  # Move labels back to CPU for numpy conversion
+
     test_loss /= len(test_loader)
     test_acc /= len(test_loader)
     
     # Print to console
     print(f'Test Loss: {test_loss:.4f}, Test Acc: {test_acc:.4f}')
     
-    #  classification report
+
     report = classification_report(all_labels, all_preds, output_dict=True)
     report_str = classification_report(all_labels, all_preds)
-    
-    # Print and save classification report to a text file
     print(report_str)
+
     with open(output_file, 'w') as f:
         f.write(f"Test Loss: {test_loss:.4f}, Test Acc: {test_acc:.4f}\n")
         f.write(report_str)
         f.write("\nJSON format:\n")
         json.dump(report, f, indent=4)
 
-    # Optionally, return the results
+
     return test_loss, test_acc, report
