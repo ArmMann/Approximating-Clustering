@@ -13,10 +13,12 @@ We've developed a model that dynamically learns from the outcomes of various con
 - **HDBSCAN (Hierarchical Density-Based Spatial Clustering of Applications with Noise)** - [Malzer and Baum, 2019]
 
 These algorithms form a flexible stack that we have tailored for fast and effective learning. Users can easily adjust or swap these components based on their specific needs.
+The clusters obtained from the mentioned stack are then used as labels to train a classification network. 
 
 ## Application
 
 The focus of our initial model is on textual data, aiming to enhance topic modeling and accelerate data processing times. This setup can be readily adapted to other data domains with some modifications and appropriate preprocessing steps.
+Refer to thesis for the results on 3 textual datasets.
 
 ## Customization
 
